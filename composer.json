@@ -1,0 +1,24 @@
+{
+    "name" : "nanjingboy/schedule",
+    "type" : "library",
+    "description" : "A simple tool that provides a easy way for writing and deploying cron jobs",
+    "keywords": ["Corn Jobs", "Schedule"],
+    "homepage": "https://github.com/nanjingboy/schedule",
+    "license": "MIT",
+    "authors": [{
+        "name": "Tom Huang",
+        "email": "hzlhu.dargon@gmail.com"
+    }],
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*"
+    },
+    "config": {
+        "bin-dir": "bin/"
+    },
+    "autoload": {
+        "classmap": ["src/"]
+    }
+}
