@@ -16,7 +16,7 @@ class Scheduler
         return static::$_instance;
     }
 
-    public function append()
+    public function job()
     {
         $job = new Job();
         array_push($this->_jobs, $job);
