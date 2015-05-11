@@ -5,7 +5,7 @@ class Scheduler
 {
     protected static $_instance = null;
 
-    protected $_jobs = array();
+    protected $_crons = array();
 
     public static function instance()
     {
@@ -16,11 +16,11 @@ class Scheduler
         return static::$_instance;
     }
 
-    public function job()
+    public function cron()
     {
-        $job = new Job();
-        array_push($this->_jobs, $job);
-        return $job;
+        $cron = new Cron();
+        array_push($this->_crons, $cron);
+        return $cron;
     }
 
     final private function __construct()
