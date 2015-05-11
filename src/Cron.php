@@ -31,7 +31,7 @@ class Cron
             $start += $frequency;
         }
 
-        $output = range($start, $max, $frequency);
+        $output = Helper::range($start, $max, $frequency);
         $maxOccurances = round(floatval($max) / floatval($frequency));
         if ($originalStart === 0) {
             $maxOccurances += 1;
@@ -44,9 +44,7 @@ class Cron
         $sections = array_fill(0, 5, '*');
         $seconds = intval($seconds);
         if ($seconds < static::MINUTE_SECONDS) {
-            throw new InvalidArgumentException(
-                'Time must be in minutes or higher'
-            );
+            throw new InvalidArgumentException('Time must be in minutes or higher');
         }
 
         if ($seconds >= static::MINUTE_SECONDS && $seconds < static::HOUR_SECONDS) {
@@ -62,7 +60,7 @@ class Cron
     {
         $minutes = intval($minutes);
         if ($minutes <= 0 || $minutes >= 60) {
-            throw new InvalidArgumentException("Minutes must between 1 and 59");
+            throw new InvalidArgumentException('Minutes must between 1 and 59');
         }
 
         return self::_parseCronSyntax($minutes * static::MINUTE_SECONDS);
