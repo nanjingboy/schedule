@@ -13,18 +13,31 @@ class Cron
     const YEAR_SECONDS = 31557600;
 
     private static $_ranges = array(
-        'minutes' => array('min' => 0, 'max' => 59),
-        'hours' => array('min' => 0, 'max' => 23),
-        'daysOfTheMonth' => array('min' => 1, 'max' => 31),
-        'months' => array('min' => 1, 'max' => 12),
-        'daysOfTheWeek' => array('min' => 0, 'max' => 7)
-    );
-    private static $_rangeErrors = array(
-        'minutes' => 'Minute must between 0 and 59',
-        'hours' => 'Hour must between 0 and 23',
-        'daysOfTheMonth' => 'Day of the month must between 1 and 31',
-        'months' => 'Month must between 1 and 12',
-        'daysOfTheWeek' => 'Day of the week must between 0 and 7'
+        'minutes' => array(
+            'min' => 0,
+            'max' => 59,
+            'error' => 'Minute must between 0 and 59'
+        ),
+        'hours' => array(
+            'min' => 0,
+            'max' => 23,
+            'error' => 'Hour must between 0 and 23'
+        ),
+        'daysOfTheMonth' => array(
+            'min' => 1,
+            'max' => 31,
+            'error' => 'Day of the month must between 1 and 31'
+        ),
+        'months' => array(
+            'min' => 1,
+            'max' => 12,
+            'error' => 'Month must between 1 and 12'
+        ),
+        'daysOfTheWeek' => array(
+            'min' => 0,
+            'max' => 7,
+            'error' => 'Day of the week must between 0 and 7'
+        )
     );
 
     private $_seconds = 0;
@@ -34,34 +47,6 @@ class Cron
     private $_months = 0;
     private $_daysOfTheWeek = 0;
 
-    private static function _parseFrequency($frequency, $max, $start = 0)
-    {
-        if (empty($frequency)) {
-            return $start;
-        }
-
-        $frequency = intval($frequency);
-        if ($frequency === 1) {
-            return '*';
-        }
-
-        if ($frequency > ceil($max * 0.5)) {
-            return $frequency;
-        }
-
-        $originalStart = $start;
-        if (intval(fmod($max + 1, $frequency)) !== 0 && $start <= 0) {
-            $start += $frequency;
-        }
-
-        $output = Helper::range($start, $max, $frequency);
-        $maxOccurances = round(floatval($max) / floatval($frequency));
-        if ($originalStart === 0) {
-            $maxOccurances += 1;
-        }
-        return implode(',', array_slice($output, 0, $maxOccurances));
-    }
-
     public static function everyMinutes($minutes = 1)
     {
         return new Static(intval($minutes) * static::MINUTE_SECONDS);
@@ -70,6 +55,11 @@ class Cron
     public static function everyHours($hours = 1)
     {
         return new static(intval($hours) * static::HOUR_SECONDS);
+    }
+
+    public static function everyDays($days = 1)
+    {
+        return new static(intval($days) * static::DAY_SECONDS);
     }
 
     public function __construct($seconds)
@@ -94,13 +84,12 @@ class Cron
         }
 
         $range = self::$_ranges[$method];
-        $rangeError = self::$_rangeErrors[$method];
         $times = array_unique(
             array_map(
-                function($time) use($range, $rangeError) {
+                function($time) use($range) {
                     $time = intval($time);
                     if ($time < $range['min'] || $time > $range['max']) {
-                        throw new InvalidArgumentException($rangeError);
+                        throw new InvalidArgumentException($range['error']);
                     }
                     return $time;
                 },
@@ -121,14 +110,14 @@ class Cron
         }
 
         if ($seconds >= static::MINUTE_SECONDS && $seconds < static::HOUR_SECONDS) {
-            $sections[0] = self::_parseFrequency(
-                floor($seconds / static::MINUTE_SECONDS), 59
-            );
+            $sections[0] = '*/' . floor($seconds / static::MINUTE_SECONDS);
         } else if ($seconds >= static::HOUR_SECONDS && $seconds < static::DAY_SECONDS) {
             $sections[0] = $this->_minutes;
-            $sections[1] = self::_parseFrequency(
-                floor($seconds / static::HOUR_SECONDS), 23
-            );
+            $sections[1] = '*/' . floor($seconds / static::HOUR_SECONDS);
+        } else if ($seconds >= static::DAY_SECONDS && $seconds < static::MONTH_SECONDS) {
+            $sections[0] = $this->_minutes;
+            $sections[1] = $this->_hours;
+            $sections[2] = '*/' . floor($seconds / static::DAY_SECONDS);
         }
 
         return implode(' ', $sections);
