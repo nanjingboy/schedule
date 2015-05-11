@@ -64,21 +64,11 @@ class Cron
 
     public static function minute($minutes)
     {
-        $minutes = intval($minutes);
-        if ($minutes <= 0 || $minutes >= 60) {
-            throw new InvalidArgumentException('Minutes must between 1 and 59');
-        }
-
-        return self::_parseCronSyntax($minutes * static::MINUTE_SECONDS);
+        return self::_parseCronSyntax(intval($minutes) * static::MINUTE_SECONDS);
     }
 
     public static function hour($hours)
     {
-        $hours = intval($hours);
-        if ($hours <= 0 || $hours >= 24) {
-            throw new InvalidArgumentException('Hours must between 1 and 23');
-        }
-
-        return self::_parseCronSyntax($hours * static::HOUR_SECONDS);
+        return self::_parseCronSyntax(intval($hours) * static::HOUR_SECONDS);
     }
 }

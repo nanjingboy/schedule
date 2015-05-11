@@ -23,11 +23,7 @@ class CronTest extends PHPUnit_Framework_TestCase
             );
         }
 
-        try {
-            Cron::minute(60);
-        } catch (InvalidArgumentException $expected) {
-            $this->assertEquals('Minutes must between 1 and 59', $expected->getMessage());
-        }
+        $this->assertEquals(Cron::hour(1), Cron::minute(60));
     }
 
     public function testHour()
@@ -43,12 +39,6 @@ class CronTest extends PHPUnit_Framework_TestCase
                 '0 ' . implode(',', Helper::range($start, 23, $number)) . ' * * *',
                 Cron::hour($number)
             );
-        }
-
-        try {
-            Cron::hour(24);
-        } catch (InvalidArgumentException $expected) {
-            $this->assertEquals('Hours must between 1 and 23', $expected->getMessage());
         }
     }
 }
