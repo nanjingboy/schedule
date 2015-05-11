@@ -40,7 +40,7 @@ class Cron
         return implode(',', array_slice($output, 0, $maxOccurances));
     }
 
-    private static function _parseCronSyntax($seconds)
+    private static function _parseCronSyntax($seconds, $at = array())
     {
         $sections = array_fill(0, 5, '*');
         $seconds = intval($seconds);
@@ -53,7 +53,7 @@ class Cron
                 floor($seconds / static::MINUTE_SECONDS), 59
             );
         } else if ($seconds >= static::HOUR_SECONDS && $seconds < static::DAY_SECONDS) {
-            $sections[0] = 0;
+            $sections[0] = (!empty($at['minute']) ? $at['minute'] : 0);
             $sections[1] = self::_parseCronFrequency(
                 floor($seconds / static::HOUR_SECONDS), 23
             );
@@ -67,8 +67,30 @@ class Cron
         return self::_parseCronSyntax(intval($minutes) * static::MINUTE_SECONDS);
     }
 
-    public static function hour($hours)
+    public static function hour($hours, $minutes = 0)
     {
-        return self::_parseCronSyntax(intval($hours) * static::HOUR_SECONDS);
+        if (!is_array($minutes)) {
+            $minutes = array($minutes);
+        }
+
+        $minutes = array_unique(
+            array_map(
+                function($minute) {
+                    $minute = intval($minute);
+                    if ($minute < 0 || $minute > 59) {
+                        throw new InvalidArgumentException(
+                            'Minute must between 0 and 59'
+                        );
+                    }
+                    return $minute;
+                },
+                $minutes
+            )
+        );
+
+        return self::_parseCronSyntax(
+            intval($hours) * static::HOUR_SECONDS,
+            array('minute' => implode(',', $minutes))
+        );
     }
 }

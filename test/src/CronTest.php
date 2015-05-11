@@ -40,5 +40,8 @@ class CronTest extends PHPUnit_Framework_TestCase
                 Cron::hour($number)
             );
         }
+
+        $this->assertEquals('10 0,4,8,12,16,20 * * *', Cron::hour(4, 10));
+        $this->assertEquals('10,20 0,4,8,12,16,20 * * *', Cron::hour(4, array(10, 20)));
     }
 }
