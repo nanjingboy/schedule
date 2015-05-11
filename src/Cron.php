@@ -9,6 +9,7 @@ class Cron
     const HOUR_SECONDS = 3600;
     const DAY_SECONDS = 86400;
     const WEEK_SECONDS = 604800;
+    const MONTH_SECONDS = 2592000;
     const YEAR_SECONDS = 31557600;
 
     private static function _parseCronFrequency($frequency, $max, $start = 0)
@@ -51,6 +52,11 @@ class Cron
             $sections[0] = self::_parseCronFrequency(
                 floor($seconds / static::MINUTE_SECONDS), 59
             );
+        } else if ($seconds >= static::HOUR_SECONDS && $seconds < static::DAY_SECONDS) {
+            $sections[0] = 0;
+            $sections[1] = self::_parseCronFrequency(
+                floor($seconds / static::HOUR_SECONDS), 23
+            );
         }
 
         return implode(' ', $sections);
@@ -64,5 +70,15 @@ class Cron
         }
 
         return self::_parseCronSyntax($minutes * static::MINUTE_SECONDS);
+    }
+
+    public static function hour($hours)
+    {
+        $hours = intval($hours);
+        if ($hours <= 0 || $hours >= 24) {
+            throw new InvalidArgumentException('Hours must between 1 and 23');
+        }
+
+        return self::_parseCronSyntax($hours * static::HOUR_SECONDS);
     }
 }
