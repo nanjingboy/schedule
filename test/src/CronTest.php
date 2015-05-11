@@ -6,7 +6,7 @@ use PHPUnit_Framework_TestCase;
 
 class CronTest extends PHPUnit_Framework_TestCase
 {
-    public function testMinute()
+    public function testEveryMinutes()
     {
         $this->assertEquals('*/1 * * * *', Cron::everyMinutes(1)->parse());
         $this->assertEquals(
@@ -15,16 +15,12 @@ class CronTest extends PHPUnit_Framework_TestCase
         );
     }
 
-    public function testHour()
+    public function testEveryHours()
     {
         $this->assertEquals('0 */1 * * *', Cron::everyHours(1)->parse());
         $this->assertEquals(
             Cron::everyHours(24)->parse(),
             Cron::everyDays(1)->parse()
-        );
-        $this->assertEquals(
-            '10 */4 * * *',
-            Cron::everyHours(4)->minutes(10)->parse()
         );
         $this->assertEquals(
             '10,20 */4 * * *',
@@ -37,16 +33,26 @@ class CronTest extends PHPUnit_Framework_TestCase
         );
     }
 
-    public function testDay()
+    public function testEveryDays()
     {
         $this->assertEquals('0 0 */1 * *', Cron::everyDays(1)->parse());
         $this->assertEquals(
-            '0 10,12 */1 * *',
-            Cron::everyDays(1)->hours(array(10, 12))->parse()
+            '30,40,50 12,20 */1 * *',
+            Cron::everyDays(1)->hours(array(12, 20))->minutes(array(30, 40, 50))->parse()
         );
+
         $this->assertEquals(
-            '30,40,50 20 */1 * *',
-            Cron::everyDays(1)->hours(20)->minutes(array(30, 40, 50))->parse()
+            Cron::everyDays(31)->parse(),
+            Cron::everyMonths(1)->parse()
+        );
+    }
+
+    public function testEveryMonths()
+    {
+        $this->assertEquals('0 0 1 */1 *', Cron::everyMonths(1)->parse());
+        $this->assertEquals(
+            '1 10 12,13 */1 *',
+            Cron::everyMonths(1)->daysOfTheMonth(array(12, 13))->hours(10)->minutes(1)->parse()
         );
     }
 }

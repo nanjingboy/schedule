@@ -10,7 +10,7 @@ class Cron
     const DAY_SECONDS = 86400;
     const WEEK_SECONDS = 604800;
     const MONTH_SECONDS = 2592000;
-    const YEAR_SECONDS = 31557600;
+    const YEAR_SECONDS = 31104000;
 
     private static $_ranges = array(
         'minutes' => array(
@@ -43,8 +43,8 @@ class Cron
     private $_seconds = 0;
     private $_minutes = 0;
     private $_hours = 0;
-    private $_daysOfTheMonth = 0;
-    private $_months = 0;
+    private $_daysOfTheMonth = 1;
+    private $_months = 1;
     private $_daysOfTheWeek = 0;
 
     public static function everyMinutes($minutes = 1)
@@ -60,6 +60,11 @@ class Cron
     public static function everyDays($days = 1)
     {
         return new static(intval($days) * static::DAY_SECONDS);
+    }
+
+    public static function everyMonths($months = 1)
+    {
+        return new static(intval($months) * static::MONTH_SECONDS);
     }
 
     public function __construct($seconds)
@@ -79,6 +84,8 @@ class Cron
             } else {
                 $times = array($arguments[0]);
             }
+        } else if (in_array($method, array('daysOfTheMonth', 'months'))) {
+            $times = array(1);
         } else {
             $times = array(0);
         }
@@ -118,6 +125,11 @@ class Cron
             $sections[0] = $this->_minutes;
             $sections[1] = $this->_hours;
             $sections[2] = '*/' . floor($seconds / static::DAY_SECONDS);
+        } else if ($seconds >= static::MONTH_SECONDS && $seconds <= static::YEAR_SECONDS) {
+            $sections[0] = $this->_minutes;
+            $sections[1] = $this->_hours;
+            $sections[2] = $this->_daysOfTheMonth;
+            $sections[3] = '*/' . floor($seconds / static::MONTH_SECONDS);
         }
 
         return implode(' ', $sections);
