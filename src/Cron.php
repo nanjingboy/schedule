@@ -40,12 +40,12 @@ class Cron
         )
     );
 
-    private $_seconds = 0;
-    private $_minutes = 0;
-    private $_hours = 0;
-    private $_daysOfTheMonth = 1;
-    private $_months = 1;
-    private $_daysOfTheWeek = 0;
+    private $_type = null;
+    private $_minutes = '*';
+    private $_hours = '*';
+    private $_daysOfTheMonth = '*';
+    private $_months = '*';
+    private $_daysOfTheWeek = '*';
 
     public static function everyMinutes($minutes = 1)
     {
@@ -67,9 +67,35 @@ class Cron
         return new static(intval($months) * static::MONTH_SECONDS);
     }
 
-    public function __construct($seconds)
+    public function __construct($seconds = null)
     {
-        $this->_seconds = intval($seconds);
+        if ($seconds !== null) {
+            $seconds = intval($seconds);
+            if ($seconds < static::MINUTE_SECONDS) {
+                throw new InvalidArgumentException('Time must be in minutes or higher');
+            }
+
+            if ($seconds >= static::MINUTE_SECONDS && $seconds < static::HOUR_SECONDS) {
+                $this->_minutes = '*/' . floor($seconds / static::MINUTE_SECONDS);
+                $this->_type = 'EVERY_MINUTE';
+            } else if ($seconds >= static::HOUR_SECONDS && $seconds < static::DAY_SECONDS) {
+                $this->_minutes = 0;
+                $this->_hours = '*/' . floor($seconds / static::HOUR_SECONDS);
+                $this->_type = 'EVERY_HOUR';
+            } else if ($seconds >= static::DAY_SECONDS && $seconds < static::MONTH_SECONDS) {
+                $this->_minutes = 0;
+                $this->_hours = 0;
+                $this->_daysOfTheMonth = '*/' . floor($seconds / static::DAY_SECONDS);
+                $this->_type = 'EVERY_DAY';
+            } else if ($seconds >= static::MONTH_SECONDS && $seconds <= static::YEAR_SECONDS) {
+                $this->_minutes = 0;
+                $this->_hours = 0;
+                $this->_daysOfTheMonth = 1;
+                $this->_months = '*/' . floor($seconds / static::MONTH_SECONDS);
+                $this->_daysOfTheWeek = '*';
+                $this->_type = 'EVERY_MONTH';
+            }
+        }
     }
 
     public function __call($method, $arguments)
@@ -111,25 +137,28 @@ class Cron
     public function parse()
     {
         $sections = array_fill(0, 5, '*');
-        $seconds = $this->_seconds;
-        if ($seconds < static::MINUTE_SECONDS) {
-            throw new InvalidArgumentException('Time must be in minutes or higher');
-        }
-
-        if ($seconds >= static::MINUTE_SECONDS && $seconds < static::HOUR_SECONDS) {
-            $sections[0] = '*/' . floor($seconds / static::MINUTE_SECONDS);
-        } else if ($seconds >= static::HOUR_SECONDS && $seconds < static::DAY_SECONDS) {
-            $sections[0] = $this->_minutes;
-            $sections[1] = '*/' . floor($seconds / static::HOUR_SECONDS);
-        } else if ($seconds >= static::DAY_SECONDS && $seconds < static::MONTH_SECONDS) {
-            $sections[0] = $this->_minutes;
-            $sections[1] = $this->_hours;
-            $sections[2] = '*/' . floor($seconds / static::DAY_SECONDS);
-        } else if ($seconds >= static::MONTH_SECONDS && $seconds <= static::YEAR_SECONDS) {
-            $sections[0] = $this->_minutes;
-            $sections[1] = $this->_hours;
-            $sections[2] = $this->_daysOfTheMonth;
-            $sections[3] = '*/' . floor($seconds / static::MONTH_SECONDS);
+        switch ($this->_type) {
+            case 'EVERY_MINUTE':
+                $sections[0] = $this->_minutes;
+                break;
+            case 'EVERY_HOUR':
+                $sections[0] = $this->_minutes;
+                $sections[1] = $this->_hours;
+                break;
+            case 'EVERY_DAY':
+                $sections[0] = $this->_minutes;
+                $sections[1] = $this->_hours;
+                $sections[2] = $this->_daysOfTheMonth;
+                break;
+            case 'EVERY_MONTH':
+                $sections[0] = $this->_minutes;
+                $sections[1] = $this->_hours;
+                $sections[2] = $this->_daysOfTheMonth;
+                $sections[3] = $this->_months;
+                $sections[4] = $this->_daysOfTheWeek;
+                break;
+            default:
+                break;
         }
 
         return implode(' ', $sections);
