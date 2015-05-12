@@ -62,4 +62,31 @@ class CronTest extends PHPUnit_Framework_TestCase
             $this->assertEquals('Time must be lower or equal 12 months', $e->getMessage());
         }
     }
+
+    public function testEveryWeek()
+    {
+        $this->assertEquals('0 0 * * 1', Cron::everyWeek()->parse());
+        $this->assertEquals(
+            '1 10 * 10 1',
+            Cron::everyWeek()->months(10)->hours(10)->minutes(1)->parse()
+        );
+    }
+
+    public function testEveryWeekday()
+    {
+        $this->assertEquals('0 0 * * 1,2,3,4,5', Cron::everyWeekday()->parse());
+        $this->assertEquals(
+            '1 10 * 10 1,2,3,4,5',
+            Cron::everyWeekday()->months(10)->hours(10)->minutes(1)->parse()
+        );
+    }
+
+    public function testEveryWeekend()
+    {
+        $this->assertEquals('0 0 * * 0,6', Cron::everyWeekend()->parse());
+        $this->assertEquals(
+            '1 10 * 10 0,6',
+            Cron::everyWeekend()->months(10)->hours(10)->minutes(1)->parse()
+        );
+    }
 }

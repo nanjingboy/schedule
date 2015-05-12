@@ -40,12 +40,67 @@ class Cron
         )
     );
 
-    private $_type = null;
+    private $_options = null;
+
     private $_minutes = '*';
     private $_hours = '*';
     private $_daysOfTheMonth = '*';
     private $_months = '*';
     private $_daysOfTheWeek = '*';
+
+    final private function __construct($time, $isWeekly = false)
+    {
+        if ($isWeekly) {
+            $this->_minutes = 0;
+            $this->_hours = 0;
+            $this->_daysOfTheMonth = '*';
+            $this->_months = '*';
+            $this->_options = array(
+                'type' => 'EVERY_WEEK',
+                'frequency' => implode(',', $time)
+            );
+        } else {
+            $seconds = intval($time);
+            if ($seconds < static::MINUTE_SECONDS) {
+                throw new InvalidArgumentException('Time must be in minutes or higher');
+            } else if ($seconds > static::YEAR_SECONDS) {
+                throw new InvalidArgumentException('Time must be lower or equal 12 months');
+            }
+
+            if ($seconds >= static::MINUTE_SECONDS && $seconds < static::HOUR_SECONDS) {
+                $this->_options = array(
+                    'type' => 'EVERY_MINUTE',
+                    'frequency' => '*/' . floor($seconds / static::MINUTE_SECONDS)
+                );
+            } else if ($seconds >= static::HOUR_SECONDS && $seconds < static::DAY_SECONDS) {
+                $this->_minutes = 0;
+                $this->_options = array(
+                    'type' => 'EVERY_HOUR',
+                    'frequency' => '*/' . floor($seconds / static::HOUR_SECONDS)
+                );
+            } else if ($seconds >= static::DAY_SECONDS && $seconds < static::MONTH_SECONDS) {
+                $this->_minutes = 0;
+                $this->_hours = 0;
+                $this->_options = array(
+                    'type' => 'EVERY_DAY',
+                    'frequency' => '*/' . floor($seconds / static::DAY_SECONDS)
+                );
+            } else if ($seconds >= static::MONTH_SECONDS && $seconds <= static::YEAR_SECONDS) {
+                $this->_minutes = 0;
+                $this->_hours = 0;
+                $this->_daysOfTheMonth = 1;
+                $this->_daysOfTheWeek = '*';
+                $this->_options = array(
+                    'type' => 'EVERY_MONTH',
+                    'frequency' => '*/' . floor($seconds / static::MONTH_SECONDS)
+                );
+            }
+        }
+    }
+
+    final private function __clone()
+    {
+    }
 
     public static function everyMinutes($minutes = 1)
     {
@@ -72,37 +127,19 @@ class Cron
         return static::everyMonths(12);
     }
 
-    public function __construct($seconds = null)
+    public static function everyWeek()
     {
-        if ($seconds !== null) {
-            $seconds = intval($seconds);
-            if ($seconds < static::MINUTE_SECONDS) {
-                throw new InvalidArgumentException('Time must be in minutes or higher');
-            } else if ($seconds > static::YEAR_SECONDS) {
-                throw new InvalidArgumentException('Time must be lower or equal 12 months');
-            }
+        return new static(array(1), true);
+    }
 
-            if ($seconds >= static::MINUTE_SECONDS && $seconds < static::HOUR_SECONDS) {
-                $this->_minutes = '*/' . floor($seconds / static::MINUTE_SECONDS);
-                $this->_type = 'EVERY_MINUTE';
-            } else if ($seconds >= static::HOUR_SECONDS && $seconds < static::DAY_SECONDS) {
-                $this->_minutes = 0;
-                $this->_hours = '*/' . floor($seconds / static::HOUR_SECONDS);
-                $this->_type = 'EVERY_HOUR';
-            } else if ($seconds >= static::DAY_SECONDS && $seconds < static::MONTH_SECONDS) {
-                $this->_minutes = 0;
-                $this->_hours = 0;
-                $this->_daysOfTheMonth = '*/' . floor($seconds / static::DAY_SECONDS);
-                $this->_type = 'EVERY_DAY';
-            } else if ($seconds >= static::MONTH_SECONDS && $seconds <= static::YEAR_SECONDS) {
-                $this->_minutes = 0;
-                $this->_hours = 0;
-                $this->_daysOfTheMonth = 1;
-                $this->_months = '*/' . floor($seconds / static::MONTH_SECONDS);
-                $this->_daysOfTheWeek = '*';
-                $this->_type = 'EVERY_MONTH';
-            }
-        }
+    public static function everyWeekday()
+    {
+        return new static(array(1,2,3,4,5), true);
+    }
+
+    public static function everyWeekend()
+    {
+        return new static(array(0, 6), true);
     }
 
     public function __call($method, $arguments)
@@ -136,26 +173,32 @@ class Cron
     public function parse()
     {
         $sections = array_fill(0, 5, '*');
-        switch ($this->_type) {
+        $options = $this->_options;
+        switch ($options['type']) {
             case 'EVERY_MINUTE':
-                $sections[0] = $this->_minutes;
+                $sections[0] = $options['frequency'];
                 break;
             case 'EVERY_HOUR':
                 $sections[0] = $this->_minutes;
-                $sections[1] = $this->_hours;
+                $sections[1] = $options['frequency'];
                 break;
             case 'EVERY_DAY':
                 $sections[0] = $this->_minutes;
                 $sections[1] = $this->_hours;
-                $sections[2] = $this->_daysOfTheMonth;
+                $sections[2] = $options['frequency'];
                 break;
             case 'EVERY_MONTH':
                 $sections[0] = $this->_minutes;
                 $sections[1] = $this->_hours;
                 $sections[2] = $this->_daysOfTheMonth;
-                $sections[3] = $this->_months;
+                $sections[3] = $options['frequency'];
                 $sections[4] = $this->_daysOfTheWeek;
                 break;
+            case 'EVERY_WEEK':
+                $sections[0] = $this->_minutes;
+                $sections[1] = $this->_hours;
+                $sections[3] = $this->_months;
+                $sections[4] = $options['frequency'];
             default:
                 break;
         }
