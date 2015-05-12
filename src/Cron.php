@@ -73,6 +73,8 @@ class Cron
             $seconds = intval($seconds);
             if ($seconds < static::MINUTE_SECONDS) {
                 throw new InvalidArgumentException('Time must be in minutes or higher');
+            } else if ($seconds > static::YEAR_SECONDS) {
+                throw new InvalidArgumentException('Time must be lower or equal 12 months');
             }
 
             if ($seconds >= static::MINUTE_SECONDS && $seconds < static::HOUR_SECONDS) {

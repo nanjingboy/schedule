@@ -2,6 +2,7 @@
 namespace Test\Src;
 
 use Schedule\Cron;
+use InvalidArgumentException;
 use PHPUnit_Framework_TestCase;
 
 class CronTest extends PHPUnit_Framework_TestCase
@@ -54,5 +55,11 @@ class CronTest extends PHPUnit_Framework_TestCase
             '1 10 12,13 */1 *',
             Cron::everyMonths(1)->daysOfTheMonth(array(12, 13))->hours(10)->minutes(1)->parse()
         );
+
+        try {
+            Cron::everyMonths(13)->parse();
+        } catch (InvalidArgumentException $e) {
+            $this->assertEquals('Time must be lower or equal 12 months', $e->getMessage());
+        }
     }
 }
