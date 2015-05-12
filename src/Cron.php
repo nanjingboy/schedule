@@ -111,16 +111,8 @@ class Cron
             throw new UndefinedMethodException($method, __class__);
         }
 
-        if (count($arguments) > 0) {
-            if (is_array($arguments[0])) {
-                $times = $arguments[0];
-            } else {
-                $times = array($arguments[0]);
-            }
-        } else if (in_array($method, array('daysOfTheMonth', 'months'))) {
-            $times = array(1);
-        } else {
-            $times = array(0);
+        if (count($arguments) === 0) {
+            throw new MissingArgumentException($method, __class__);
         }
 
         $range = self::$_ranges[$method];
@@ -133,7 +125,7 @@ class Cron
                     }
                     return $time;
                 },
-                $times
+                is_array($arguments[0]) ? $arguments[0] : array($arguments[0])
             )
         );
         $attribute = "_{$method}";
