@@ -76,9 +76,9 @@ class CronTest extends PHPUnit_Framework_TestCase
 
     public function testEveryWeek()
     {
-        $this->assertEquals('0 0 * * 1', Cron::everyWeek()->parse());
+        $this->assertEquals('0 0 * * 0', Cron::everyWeek()->parse());
         $this->assertEquals(
-            '1 10 * 10 1',
+            '1 10 * 10 0',
             Cron::everyWeek()->months(10)->hours(10)->minutes(1)->parse()
         );
     }

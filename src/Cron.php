@@ -136,7 +136,7 @@ class Cron
 
     public static function everyWeek()
     {
-        return new static(array(1), true);
+        return new static(array(0), true);
     }
 
     public static function everyWeekday()
