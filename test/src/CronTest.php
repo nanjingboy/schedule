@@ -107,6 +107,11 @@ class CronTest extends PHPUnit_Framework_TestCase
             '*/1 * * * * ENV=test HOME=/Users/tom balabalabala',
             Cron::everyMinutes(1)->command('balabalabala')->parse()
         );
+
+        $this->assertEquals(
+            '*/1 * * * * ENV=test HOME=/Users/tom balabalabala >> balabalabala.log 2>&1',
+            Cron::everyMinutes(1)->command('balabalabala', array('log' => 'balabalabala.log'))->parse()
+        );
     }
 
     public function testFile()
@@ -114,6 +119,11 @@ class CronTest extends PHPUnit_Framework_TestCase
         $this->assertEquals(
             '0 */1 * * * ENV=test HOME=/Users/tom php command.php',
             Cron::everyHours(1)->file('command.php')->parse()
+        );
+
+        $this->assertEquals(
+            '0 */1 * * * ENV=test HOME=/Users/tom php command.php 2>> error.log',
+            Cron::everyHours(1)->file('command.php', array('error_log' => 'error.log'))->parse()
         );
     }
 }

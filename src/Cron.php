@@ -177,15 +177,15 @@ class Cron
         return $this;
     }
 
-    public function command($command)
+    public function command($command, $options = array())
     {
-        $this->_command = new Command(array('command' => $command));
+        $this->_command = new Command(array_merge(array('command' => $command), $options));
         return $this;
     }
 
-    public function file($file)
+    public function file($file, $options = array())
     {
-        $this->_command = new Command(array('file' => $file));
+        $this->_command = new Command(array_merge(array('file' => $file), $options));
         return $this;
     }
 
