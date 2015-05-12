@@ -7,6 +7,17 @@ use PHPUnit_Framework_TestCase;
 
 class CronTest extends PHPUnit_Framework_TestCase
 {
+    public function testEvery()
+    {
+        $this->assertEquals('* * * * *', Cron::every()->parse());
+        $this->assertEquals('1 * * * *', Cron::every()->minutes(1)->parse());
+        $this->assertEquals('1 0 * * *', Cron::every()->minutes(1)->hours(0)->parse());
+        $this->assertEquals(
+            '1 0 1 * *',
+            Cron::every()->minutes(1)->hours(0)->daysOfTheMonth(1)->parse()
+        );
+    }
+
     public function testEveryMinutes()
     {
         $this->assertEquals('*/1 * * * *', Cron::everyMinutes(1)->parse());

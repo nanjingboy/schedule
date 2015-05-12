@@ -48,7 +48,7 @@ class Cron
     private $_months = '*';
     private $_daysOfTheWeek = '*';
 
-    final private function __construct($time, $isWeekly = false)
+    final private function __construct($time = null, $isWeekly = false)
     {
         if ($isWeekly) {
             $this->_minutes = 0;
@@ -59,7 +59,7 @@ class Cron
                 'type' => 'EVERY_WEEK',
                 'frequency' => implode(',', $time)
             );
-        } else {
+        } else if ($time !== null) {
             $seconds = intval($time);
             if ($seconds < static::MINUTE_SECONDS) {
                 throw new InvalidArgumentException('Time must be in minutes or higher');
@@ -100,6 +100,11 @@ class Cron
 
     final private function __clone()
     {
+    }
+
+    public static function every()
+    {
+        return new static();
     }
 
     public static function everyMinutes($minutes = 1)
@@ -199,7 +204,13 @@ class Cron
                 $sections[1] = $this->_hours;
                 $sections[3] = $this->_months;
                 $sections[4] = $options['frequency'];
+                break;
             default:
+                $sections[0] = $this->_minutes;
+                $sections[1] = $this->_hours;
+                $sections[2] = $this->_daysOfTheMonth;
+                $sections[3] = $this->_months;
+                $sections[4] = $this->_daysOfTheWeek;
                 break;
         }
 
