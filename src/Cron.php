@@ -48,6 +48,8 @@ class Cron
     private $_months = '*';
     private $_daysOfTheWeek = '*';
 
+    private $_command = null;
+
     final private function __construct($time = null, $isWeekly = false)
     {
         if ($isWeekly) {
@@ -175,6 +177,18 @@ class Cron
         return $this;
     }
 
+    public function command($command)
+    {
+        $this->_command = new Command(array('command' => $command));
+        return $this;
+    }
+
+    public function file($file)
+    {
+        $this->_command = new Command(array('file' => $file));
+        return $this;
+    }
+
     public function parse()
     {
         $sections = array_fill(0, 5, '*');
@@ -214,6 +228,11 @@ class Cron
                 break;
         }
 
-        return implode(' ', $sections);
+        $cron = implode(' ', $sections);
+        if ($this->_command === null) {
+            return $cron;
+        }
+
+        return $cron . ' ' . $this->_command->parse();
     }
 }

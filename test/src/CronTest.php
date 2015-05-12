@@ -100,4 +100,20 @@ class CronTest extends PHPUnit_Framework_TestCase
             Cron::everyWeekend()->months(10)->hours(10)->minutes(1)->parse()
         );
     }
+
+    public function testCommand()
+    {
+        $this->assertEquals(
+            '*/1 * * * * ENV=test HOME=/Users/tom balabalabala',
+            Cron::everyMinutes(1)->command('balabalabala')->parse()
+        );
+    }
+
+    public function testFile()
+    {
+        $this->assertEquals(
+            '0 */1 * * * ENV=test HOME=/Users/tom php command.php',
+            Cron::everyHours(1)->file('command.php')->parse()
+        );
+    }
 }
