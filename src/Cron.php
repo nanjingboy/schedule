@@ -67,6 +67,11 @@ class Cron
         return new static(intval($months) * static::MONTH_SECONDS);
     }
 
+    public static function everyYear()
+    {
+        return static::everyMonths(12);
+    }
+
     public function __construct($seconds = null)
     {
         if ($seconds !== null) {
