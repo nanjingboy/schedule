@@ -104,7 +104,7 @@ class Cron
 
     public static function everyMinutes($minutes = 1)
     {
-        return new Static(intval($minutes) * static::MINUTE_SECONDS);
+        return new static(intval($minutes) * static::MINUTE_SECONDS);
     }
 
     public static function everyHours($hours = 1)
