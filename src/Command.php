@@ -7,6 +7,21 @@ class Command
 
     public function __construct($options)
     {
+        foreach (array('log', 'standard_log', 'error_log') as $key) {
+            if (array_key_exists($key, $options) && $options[$key] === null) {
+                $options[$key] = '/dev/null';
+            }
+        }
+
+        if (!empty($options['standard_log']) &&
+            !empty($options['error_log']) &&
+            $options['standard_log'] === $options['error_log']
+        ) {
+            $options['log'] = $options['standard_log'];
+            unset($options['standard_log']);
+            unset($options['error_log']);
+        }
+
         $this->_options = $options;
     }
 
@@ -46,6 +61,20 @@ class Command
             return $command;
         }
 
-        return "{$environment} {$command}";
+        $command = "{$environment} {$command}";
+
+        if (!empty($this->_options['log'])) {
+            return $command . ' >> ' . $this->_options['log'] . ' 2>&1';
+        }
+
+        if (!empty($this->_options['standard_log'])) {
+            $command .= ' >> ' . $this->_options['standard_log'];
+        }
+
+        if (!empty($this->_options['error_log'])) {
+            $command .= ' 2>> ' . $this->_options['error_log'];
+        }
+
+        return $command;
     }
 }
