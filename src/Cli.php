@@ -16,16 +16,6 @@ class Cli
         return getcwd() . DIRECTORY_SEPARATOR . 'schedule.php';
     }
 
-    public static function options()
-    {
-        return array(
-            array(
-                'name' => 'path',
-                'description' => 'Path of the initial schedule.php file'
-            )
-        );
-    }
-
     public static function init(InputInterface $input, OutputInterface $output)
     {
         $path = self::_parseScheduleFilePath($input);
@@ -54,5 +44,41 @@ FILE;
             file_put_contents($path, $content);
             $output->writeln('<info>File created: </info>' . $path);
         }
+    }
+
+    public static function clear(InputInterface $input, OutputInterface $output)
+    {
+        $user = $input->getOption('user');
+        if (empty($user)) {
+            system('crontab -r > /dev/null 2>&1');
+        } else {
+            system("crontab -u {$user} -r > /dev/null 2>&1");
+        }
+        $output->writeln('<info>Crontab file has been cleared</info>');
+    }
+
+    public static function write(InputInterface $input, OutputInterface $output)
+    {
+        $path = self::_parseScheduleFilePath($input);
+        if (file_exists($path)) {
+            require $path;
+            $jobs = Scheduler::instance()->parse();
+            if (!empty($jobs)) {
+                $user = $input->getOption('user');
+                if (empty($usr)) {
+                    $crontab = popen('crontab -', 'r+');
+                } else {
+                    $crontab = popen("crontab -u {$user} -", 'r+');
+                }
+
+                fwrite($crontab, "#BEGIN DEFINE CRON JOBS FROM:{$path}\n");
+                foreach ($jobs as $job) {
+                    fwrite($crontab, $job . "\n");
+                }
+                fwrite($crontab, "#END DEFINE CRON JOBS FROM:{$path}\n");
+                pclose($crontab);
+            }
+        }
+        $output->writeln('<info>Crontab file has been written</info>');
     }
 }

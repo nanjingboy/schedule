@@ -23,6 +23,16 @@ class Scheduler
         return $cron;
     }
 
+    public function parse()
+    {
+        return array_map(
+            function($cron) {
+                return $cron->parse();
+            },
+            $this->_crons
+        );
+    }
+
     final private function __construct()
     {
     }

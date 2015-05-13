@@ -15,9 +15,51 @@ $commander->name('schedule')
         array(
             'name' => 'init',
             'description' => 'Create an initial schedule.php file',
-            'options' => Cli::options(),
+            'options' => array(
+                array(
+                    'name' => 'path',
+                    'description' => 'Path of the initial schedule.php file'
+                ),
+                array(
+                    'name' => 'user',
+                    'description' => 'Specify the name of the user whose crontab is to be tweaked'
+                )
+            ),
             'callback' => function($input, $output) {
                 Cli::init($input, $output);
+            }
+        )
+    )->command(
+        array(
+            'name' => 'write',
+            'description' => 'Write cron jobs that defined in schedule.php file to crontab',
+            'options' => array(
+                array(
+                    'name' => 'path',
+                    'description' => 'Path of the initial schedule.php file'
+                ),
+                array(
+                    'name' => 'user',
+                    'description' => 'Specify the name of the user whose crontab is to be tweaked'
+                )
+            ),
+            'callback' => function ($input, $output) {
+                Cli::write($input, $output);
+            }
+        )
+    )
+    ->command(
+        array(
+            'name' => 'clear',
+            'description' => 'Clear cron jobs that defined in schedule.php file from crontab',
+            'options' => array(
+                array(
+                    'name' => 'user',
+                    'description' => 'Specify the name of the user whose crontab is to be tweaked'
+                )
+            ),
+            'callback' => function ($input, $output) {
+                Cli::clear($input, $output);
             }
         )
     )
