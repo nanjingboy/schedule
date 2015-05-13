@@ -50,7 +50,7 @@ class Cron
 
     private $_command = null;
 
-    final private function __construct($time = null, $isWeekly = false)
+    private function _init($time = null, $isWeekly = false)
     {
         if ($isWeekly) {
             $this->_minutes = 0;
@@ -98,83 +98,53 @@ class Cron
                 );
             }
         }
-    }
 
-    final private function __clone()
-    {
-    }
-
-    public static function every()
-    {
-        return new static();
-    }
-
-    public static function everyMinutes($minutes = 1)
-    {
-        return new static(intval($minutes) * static::MINUTE_SECONDS);
-    }
-
-    public static function everyHours($hours = 1)
-    {
-        return new static(intval($hours) * static::HOUR_SECONDS);
-    }
-
-    public static function everyDays($days = 1)
-    {
-        return new static(intval($days) * static::DAY_SECONDS);
-    }
-
-    public static function everyMonths($months = 1)
-    {
-        return new static(intval($months) * static::MONTH_SECONDS);
-    }
-
-    public static function everyYear()
-    {
-        return static::everyMonths(12);
-    }
-
-    public static function everyWeek()
-    {
-        return new static(array(0), true);
-    }
-
-    public static function everyWeekday()
-    {
-        return new static(array(1,2,3,4,5), true);
-    }
-
-    public static function everyWeekend()
-    {
-        return new static(array(0, 6), true);
-    }
-
-    public function __call($method, $arguments)
-    {
-        if (array_key_exists($method, self::$_ranges) === false) {
-            throw new UndefinedMethodException($method, __class__);
-        }
-
-        if (count($arguments) === 0) {
-            throw new MissingArgumentException($method, __class__);
-        }
-
-        $range = self::$_ranges[$method];
-        $times = array_unique(
-            array_map(
-                function($time) use($range) {
-                    $time = intval($time);
-                    if ($time < $range['min'] || $time > $range['max']) {
-                        throw new InvalidArgumentException($range['error']);
-                    }
-                    return $time;
-                },
-                is_array($arguments[0]) ? $arguments[0] : array($arguments[0])
-            )
-        );
-        $attribute = "_{$method}";
-        $this->$attribute = implode(',', $times);
         return $this;
+    }
+
+    public function every()
+    {
+        return $this->_init();
+    }
+
+    public function everyMinutes($minutes = 1)
+    {
+        return $this->_init(intval($minutes) * static::MINUTE_SECONDS);
+    }
+
+    public function everyHours($hours = 1)
+    {
+        return $this->_init(intval($hours) * static::HOUR_SECONDS);
+    }
+
+    public function everyDays($days = 1)
+    {
+        return $this->_init(intval($days) * static::DAY_SECONDS);
+    }
+
+    public function everyMonths($months = 1)
+    {
+        return $this->_init(intval($months) * static::MONTH_SECONDS);
+    }
+
+    public function everyYear()
+    {
+        return $this->everyMonths(12);
+    }
+
+    public function everyWeek()
+    {
+        return $this->_init(array(0), true);
+    }
+
+    public function everyWeekday()
+    {
+        return $this->_init(array(1,2,3,4,5), true);
+    }
+
+    public function everyWeekend()
+    {
+        return $this->_init(array(0, 6), true);
     }
 
     public function command($command, $options = array())
@@ -234,5 +204,33 @@ class Cron
         }
 
         return $cron . ' ' . $this->_command->parse();
+    }
+
+    public function __call($method, $arguments)
+    {
+        if (array_key_exists($method, self::$_ranges) === false) {
+            throw new UndefinedMethodException($method, __class__);
+        }
+
+        if (count($arguments) === 0) {
+            throw new MissingArgumentException($method, __class__);
+        }
+
+        $range = self::$_ranges[$method];
+        $times = array_unique(
+            array_map(
+                function($time) use($range) {
+                    $time = intval($time);
+                    if ($time < $range['min'] || $time > $range['max']) {
+                        throw new InvalidArgumentException($range['error']);
+                    }
+                    return $time;
+                },
+                is_array($arguments[0]) ? $arguments[0] : array($arguments[0])
+            )
+        );
+        $attribute = "_{$method}";
+        $this->$attribute = implode(',', $times);
+        return $this;
     }
 }
