@@ -21,7 +21,7 @@ Here assume your application directory path is: /Users/tom/workspace/test
 }
 ```
 * Install it via [composer](https://getcomposer.org/doc/00-intro.md)
-* bin/schedule init   #Create an initial schedule.php file to define cron jobs
+* bin/schedule init    #  Create an initial schedule.php file to define cron jobs
 
 ### Example schedule.php file:
 
@@ -63,6 +63,11 @@ $scheduler->cron()->everyWeekend()->months($months)->hours($hours)->minutes($min
 * The value of $minutes, $hours, $daysOfTheMonth, $daysOfTheWeek, $months can be set with a single integer or array, while methods which start with every only can be set with a single integer.
 * Except methods which start with every you must invoke, the other is option.
 * You can replace command method with file, get more information from [file invoke](https://github.com/nanjingboy/schedule/blob/master/test/src/CronTest.php#L117).
+
+### Environment:
+
+* If a  \*.env(file name will read from ENV environment) file exists in the current directory, the default environment will be read from it.  You can also set SCHEDULE_ENV_FILE environment to special a \*.env file.
+* Get a example from: [test.env](https://github.com/nanjingboy/schedule/blob/master/test/test.env)
 
 ### Cli:
 
