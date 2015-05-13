@@ -1,12 +1,9 @@
 <?php
 namespace Schedule;
 
-use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\OutputInterface;
-
 class Cli
 {
-    private static function _parseScheduleFilePath(InputInterface $input)
+    private static function _parseScheduleFilePath($input)
     {
         $path = $input->getOption('path');
         if (!empty($path)) {
@@ -16,7 +13,70 @@ class Cli
         return getcwd() . DIRECTORY_SEPARATOR . 'schedule.php';
     }
 
-    public static function init(InputInterface $input, OutputInterface $output)
+    private static function _parseJobsWhichCanNotRemove($input)
+    {
+        $user = $input->getOption('user');
+        if (empty($user)) {
+            $command = 'crontab -l';
+        } else {
+            $command = 'crontab -l -u ' . $user;
+        }
+
+        $result = array();
+        $removeable = false;
+        $jobs = explode("\n", shell_exec($command . ' 2> /dev/null'));
+        $path = self::_parseScheduleFilePath($input);
+        foreach ($jobs as $job) {
+            $job = trim($job);
+            if (empty($job)) {
+                continue;
+            }
+
+            if ($job === "#BEGIN DEFINE CRON JOBS FROM:{$path}") {
+                $removeable = true;
+                continue;
+            }
+
+            if ($job === "#END DEFINE CRON JOBS FROM:{$path}") {
+                $removeable = false;
+                continue;
+            }
+
+            if ($removeable === false) {
+                array_push($result, $job);
+            }
+        }
+
+        return $result;
+    }
+
+    private static function _writeCrontab($jobs, $input)
+    {
+        $user = $input->getOption('user');
+        if (empty($jobs)) {
+            if (empty($user)) {
+                system('crontab -r > /dev/null 2>&1');
+            } else {
+                system("crontab -u {$user} -r > /dev/null 2>&1");
+            }
+            return true;
+        }
+
+        if (empty($usr)) {
+            $crontab = popen('crontab -', 'r+');
+        } else {
+            $crontab = popen("crontab -u {$user} -", 'r+');
+        }
+
+        foreach ($jobs as $job) {
+            fwrite($crontab, $job . "\n");
+        }
+        pclose($crontab);
+
+        return true;
+    }
+
+    public static function init($input, $output)
     {
         $path = self::_parseScheduleFilePath($input);
         if (file_exists($path)) {
@@ -46,39 +106,31 @@ FILE;
         }
     }
 
-    public static function clear(InputInterface $input, OutputInterface $output)
+    public static function clear($input, $output)
     {
-        $user = $input->getOption('user');
-        if (empty($user)) {
-            system('crontab -r > /dev/null 2>&1');
-        } else {
-            system("crontab -u {$user} -r > /dev/null 2>&1");
-        }
+        self::_writeCrontab(self::_parseJobsWhichCanNotRemove($input), $input);
         $output->writeln('<info>Crontab file has been cleared</info>');
     }
 
-    public static function write(InputInterface $input, OutputInterface $output)
+    public static function write($input, $output)
     {
         $path = self::_parseScheduleFilePath($input);
+        $jobs = array();
         if (file_exists($path)) {
             require $path;
             $jobs = Scheduler::instance()->parse();
             if (!empty($jobs)) {
-                $user = $input->getOption('user');
-                if (empty($usr)) {
-                    $crontab = popen('crontab -', 'r+');
-                } else {
-                    $crontab = popen("crontab -u {$user} -", 'r+');
-                }
-
-                fwrite($crontab, "#BEGIN DEFINE CRON JOBS FROM:{$path}\n");
-                foreach ($jobs as $job) {
-                    fwrite($crontab, $job . "\n");
-                }
-                fwrite($crontab, "#END DEFINE CRON JOBS FROM:{$path}\n");
-                pclose($crontab);
+                array_unshift($jobs, "#BEGIN DEFINE CRON JOBS FROM:{$path}");
+                array_push($jobs, "#END DEFINE CRON JOBS FROM:{$path}");
             }
         }
+        self::_writeCrontab(
+            array_merge(
+                self::_parseJobsWhichCanNotRemove($input),
+                $jobs
+            ),
+            $input
+        );
         $output->writeln('<info>Crontab file has been written</info>');
     }
 }
