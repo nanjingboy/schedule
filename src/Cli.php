@@ -40,14 +40,16 @@ class Cli
  * Use this file to define your cron jobs.
  * Examples:
  *
- * Schedule\Cron->everyMinutes(1)->command('/usr/bin/your_command');
- * Schedule\Cron->everyHours(1)->minutes(10)->file('/Users/tom/command.php');
+ * use Schedule\Scheduler;
+ *
+ * Scheduler::instance()->cron()->everyMinutes(1)->command('/usr/bin/your_command');
+ * Scheduler::instance()->cron()->everyHours(1)->minutes(10)->file('/Users/tom/command.php');
  *
  * Get more information from: https://github.com/nanjingboy/schedule
  */
 require __DIR__ . '/vendor/autoload.php';
 
-use Schedule\Cron;
+use Schedule\Scheduler;
 FILE;
             file_put_contents($path, $content);
             $output->writeln('<info>File created: </info>' . $path);
