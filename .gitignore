@@ -1,3 +1,4 @@
 vendor/
 bin/
+schedule.php
 composer.lock
