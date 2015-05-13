@@ -19,6 +19,7 @@
     "config": {
         "bin-dir": "bin/"
     },
+    "bin": ["cli/schedule"],
     "autoload": {
         "classmap": ["src/"]
     }
