@@ -61,7 +61,7 @@ $scheduler->cron()->everyWeekend()->months($months)->hours($hours)->minutes($min
     *  error_log: output STDERR to the given path.
     *  if set value of log,standard_log,error_log with null, it will output STDOUT or STDERR to /dev/null.
 * The value of $minutes, $hours, $daysOfTheMonth, $daysOfTheWeek, $months can be set with a single integer or array, while methods which start with every only can be set with a single integer.
-* Except methods which start with every you must invoke, the other is option.
+* Except methods which start with every you must invoke, the other is optional.
 * You can replace command method with file, get more information from [file invoke](https://github.com/nanjingboy/schedule/blob/master/test/src/CronTest.php#L117).
 
 ### Environment:
