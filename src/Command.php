@@ -29,11 +29,7 @@ class Command
     {
         $environmentFile = getenv('SCHEDULE_ENV_FILE');
         if (empty($environmentFile)) {
-            $environment = getenv('ENV');
-            if (empty($environment)) {
-                $environment = 'development';
-            }
-            $environmentFile = getcwd() . DIRECTORY_SEPARATOR . $environment . '.env';
+            $environmentFile = getcwd() . DIRECTORY_SEPARATOR . getenv('ENV') . '.env';
         }
 
         if (!file_exists($environmentFile)) {
