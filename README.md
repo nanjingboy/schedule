@@ -66,7 +66,9 @@ $scheduler->cron()->everyWeekend()->months($months)->hours($hours)->minutes($min
 
 ### Environment:
 
-* If a  \*.env(file name will read from ENV environment) file exists in the current directory, the default environment will be read from it.  You can also set SCHEDULE_ENV_FILE environment to special a \*.env file.
+* If a \*.env(file name will read from ENV environment) file exists in the current directory, the default environment will be read from it.
+* You can also set SCHEDULE_ENV_FILE environment to special a \*.env file.
+* If ENV and SCHEDULE_ENV_FILE neither be set, the default environment will be read from .env file(if it exists) in the current directory.
 * Get a example from: [test.env](https://github.com/nanjingboy/schedule/blob/master/test/test.env)
 
 ### Cli:
