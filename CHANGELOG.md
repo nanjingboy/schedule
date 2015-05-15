@@ -1,2 +1,2 @@
-## 0.1.0 May 13, 2015
+## 0.1.0 May 15, 2015
 * Initial release
